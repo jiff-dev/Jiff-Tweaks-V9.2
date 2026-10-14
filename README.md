@@ -10,7 +10,7 @@ Community: https://discord.gg/fuegoscrims
 Open **PowerShell as Administrator** and paste:
 
 ```powershell
-irm https://raw.githubusercontent.com/jiff-dev/Jiff-free-Tweaks-V9/main/Jiff-Tweaks.ps1 | iex
+irm https://raw.githubusercontent.com/jiff-dev/Jiff-Tweaks-V9.2/main/Jiff-Tweaks.ps1 | iex
 ```
 
 Or download `Jiff-Tweaks.ps1` and either double-click **Jiff Tweaks.bat**, or run:
@@ -70,4 +70,4 @@ Notes: requires Windows 10/11 and Windows PowerShell 5.1 (built in) or PowerShel
 
 ## For the repo owner
 
-Upload `Jiff-Tweaks.ps1` and `version.txt` to the root of the `main` branch. The one-line command above reads the first, the *Check for updates* button reads the second. When you release a new version, change the number in `version.txt`.
+`Jiff-Tweaks.ps1` and `version.txt` need to stay at the root of the `main` branch: the one-line command above reads the first, the *Check for updates* button reads the second. When you release a new version, change the number in `version.txt`.

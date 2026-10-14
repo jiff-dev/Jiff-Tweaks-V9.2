@@ -18,7 +18,7 @@
 
   RUN IT
     Open PowerShell as Administrator, then:
-      irm https://raw.githubusercontent.com/jiff-dev/Jiff-free-Tweaks-V9/main/Jiff-Tweaks.ps1 | iex
+      irm https://raw.githubusercontent.com/jiff-dev/Jiff-Tweaks-V9.2/main/Jiff-Tweaks.ps1 | iex
     or save the file and run:
       powershell -ExecutionPolicy Bypass -File .\Jiff-Tweaks.ps1
 
@@ -76,7 +76,7 @@ param(
 # ============================================================================
 #  START
 # ============================================================================
-$JT_SELF_URL = 'https://raw.githubusercontent.com/jiff-dev/Jiff-free-Tweaks-V9/main/Jiff-Tweaks.ps1'
+$JT_SELF_URL = 'https://raw.githubusercontent.com/jiff-dev/Jiff-Tweaks-V9.2/main/Jiff-Tweaks.ps1'
 
 # "-Apply a,b" arrives as one text when the script is started with -File, so split the lists here
 if ($Apply)   { $Apply   = @($Apply   | ForEach-Object { $_ -split '[,;\s]+' } | Where-Object { $_ }) }
@@ -2848,14 +2848,14 @@ function Start-Run {
 
 # ---------------------------------------------------------------- update check (only when you press the button or switch it on)
 function Get-UpdateInfo {
-  $url = 'https://raw.githubusercontent.com/jiff-dev/Jiff-free-Tweaks-V9/main/version.txt'
+  $url = 'https://raw.githubusercontent.com/jiff-dev/Jiff-Tweaks-V9.2/main/version.txt'
   try {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $txt = (Invoke-WebRequest -UseBasicParsing -Uri $url -TimeoutSec 6).Content.ToString().Trim()
     $latest = ($txt -split "\s+")[0]
     $newer = $false
     try { $newer = ([version]$latest) -gt ([version]$script:Cfg.Version) } catch { }
-    return @{ ok = $true; current = $script:Cfg.Version; latest = $latest; newer = $newer; url = $url; page = 'https://github.com/jiff-dev/Jiff-free-Tweaks-V9' }
+    return @{ ok = $true; current = $script:Cfg.Version; latest = $latest; newer = $newer; url = $url; page = 'https://github.com/jiff-dev/Jiff-Tweaks-V9.2' }
   } catch { return @{ ok = $false; current = $script:Cfg.Version; error = $_.Exception.Message; url = $url } }
 }
 
