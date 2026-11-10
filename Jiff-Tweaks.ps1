@@ -42,15 +42,15 @@
     line  1500  Tweaks: services and scheduled tasks
     line  1627  Tweaks: network
     line  1734  Tweaks: privacy and debloat
-    line  1878  Tweaks: GPU
-    line  1999  Tweaks: expert lab and branding
-    line  2200  Tweaks: restore and the Full profile
-    line  2308  Engine: running tweaks, previews, the code view
-    line  2548  Engine: live numbers (CPU, GPU, memory, disk, network)
-    line  2735  Server: the local web server for the window
-    line  3143  Command line: -List, -Apply, -Preset ...
-    line  3427  The window itself (HTML, CSS, JavaScript)
-    line  4932  Last: administrator rights, 64-bit check, launch
+    line  1913  Tweaks: GPU
+    line  2034  Tweaks: expert lab and branding
+    line  2235  Tweaks: restore and the Full profile
+    line  2343  Engine: running tweaks, previews, the code view
+    line  2583  Engine: live numbers (CPU, GPU, memory, disk, network)
+    line  2770  Server: the local web server for the window
+    line  3178  Command line: -List, -Apply, -Preset ...
+    line  3462  The window itself (HTML, CSS, JavaScript)
+    line  4968  Last: administrator rights, 64-bit check, launch
 
   Needs Windows 10 or 11 and Windows PowerShell 5.1 (or PowerShell 7) as administrator.
   Community: https://discord.gg/fuegoscrims
@@ -101,7 +101,7 @@ if (-not $script:Cfg) {
   $root = $env:JT_ROOT
   if (-not $root) { $root = Join-Path ([string]$env:SystemDrive + '\') 'JiffTweaks' }
   $script:Cfg = @{
-    Version   = '9.2'
+    Version   = '9.3'
     Root      = $root
     PlanGuid  = '5a1f6d3e-8b2c-4d7a-9e41-0c3a6b7f1d25'
     ScriptDir = $env:JT_SCRIPTDIR
@@ -395,7 +395,7 @@ function Add-Tweak {
   param([hashtable]$T)
   $o = [ordered]@{
     Id = ''; Title = ''; Page = ''; Icon = 'zap'; Risk = 'safe'; Reboot = $false; Short = ''; Does = @(); Tags = @()
-    Apply = $null; Check = $null; Note = ''; Vendor = ''; Covers = @(); OnAt = 1.0; OffAt = 0.0; Steps = 0; Kind = 'tweak'
+    Apply = $null; Check = $null; Note = ''; Vendor = ''; Covers = @(); OnAt = 1.0; OffAt = 0.0; Steps = 0; Kind = 'tweak'; New = $false
   }
   foreach ($k in $T.Keys) { $o[$k] = $T[$k] }
   $script:Tweaks[$o.Id] = [pscustomobject]$o
@@ -1874,6 +1874,41 @@ Add-Tweak @{
   }
 }
 
+Add-Tweak @{
+  Id = 'modern_debloat'; Title = 'Windows 11 extras'; Page = 'cleanup'; Icon = 'sparkle'; Risk = 'safe'; Reboot = $false; OnAt = 0.9; New = $true
+  Short = 'Recall, Copilot, Widgets, Chat and Start menu recommendations off.'
+  Tags = @('Recall', 'Copilot', 'Widgets', 'Chat', 'Start menu')
+  Does = @(
+    'Recall snapshots off (the policy Microsoft ships for this, on PCs that have Recall)'
+    'Copilot off: the policy, and the taskbar button'
+    'Widgets off: the policy, and the taskbar icon'
+    'Chat (Teams icon) off the taskbar'
+    '"Recommended" section off the Start menu'
+  )
+  Note = 'All of this is Microsoft Group Policy or a documented taskbar setting, nothing hidden. Some of it needs Explorer to restart or a sign-out to show.'
+  Apply = {
+    # Recall: the Group Policy Microsoft ships for turning off snapshot saving (PCs without Recall simply ignore this)
+    $ai = 'SOFTWARE\Policies\Microsoft\Windows\WindowsAI'
+    Set-Reg HKLM $ai DisableAIDataAnalysis DWord 1
+    Set-Reg HKLM $ai AllowRecallEnablement DWord 0
+
+    # Copilot: policy plus the taskbar button
+    Set-Reg HKLM 'SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot' TurnOffWindowsCopilot DWord 1
+    Set-Reg HKCU 'Software\Policies\Microsoft\Windows\WindowsCopilot' TurnOffWindowsCopilot DWord 1
+    Set-Reg HKCU 'Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' ShowCopilotButton DWord 0
+
+    # Widgets: policy plus the taskbar icon
+    Set-Reg HKLM 'SOFTWARE\Policies\Microsoft\Dsh' AllowNewsAndInterests DWord 0
+    Set-Reg HKCU 'Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' TaskbarDa DWord 0
+
+    # Chat (Teams) icon
+    Set-Reg HKCU 'Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' TaskbarMn DWord 0
+
+    # Start menu "Recommended" section
+    Set-Reg HKCU 'Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' Start_IrisRecommendations DWord 0
+  }
+}
+
 # ============================================================================
 #  TWEAKS - GPU (NVIDIA and AMD driver settings)
 #  Display adapters are found in the registry by vendor id (10DE = NVIDIA,
@@ -2278,15 +2313,15 @@ Add-Tweak @{
     'Scheduled task cleanup'
     'Network: TCP settings, Nagle off, adapter properties'
     'JiffOS power plan, USB and device power saving off'
-    'Privacy and telemetry policies'
+    'Privacy and telemetry policies, Recall/Copilot/Widgets/Chat off'
     'GPU tweaks for the detected vendor, boot timer tweak'
     'Debloat: Store apps and OneDrive uninstall'
   )
   Note = 'Defender and CPU mitigations are not touched. Removed apps are not restored by Restore.'
   Covers = @('reg_all', 'reg_system', 'reg_gaming', 'reg_input_ui', 'reg_priority', 'svc_advanced', 'svc_standard', 'svc_basic', 'svc_xbox', 'tasks_disable', 'net_all', 'net_global',
-    'net_interfaces', 'nic_tweaks', 'power_plan', 'devpower', 'bcd_timer', 'privacy', 'debloat_curated', 'debloat_extended', 'debloat_onedrive', 'gpu_auto', 'nvidia_all', 'amd_all', 'restore_point')
+    'net_interfaces', 'nic_tweaks', 'power_plan', 'devpower', 'bcd_timer', 'privacy', 'modern_debloat', 'debloat_curated', 'debloat_extended', 'debloat_onedrive', 'gpu_auto', 'nvidia_all', 'amd_all', 'restore_point')
   Check = {
-    $ids = 'reg_all', 'svc_advanced', 'tasks_disable', 'net_all', 'power_plan', 'devpower', 'privacy', 'gpu_auto', 'bcd_timer', 'debloat_extended', 'debloat_onedrive'
+    $ids = 'reg_all', 'svc_advanced', 'tasks_disable', 'net_all', 'power_plan', 'devpower', 'privacy', 'modern_debloat', 'gpu_auto', 'bcd_timer', 'debloat_extended', 'debloat_onedrive'
     Join-State ($ids | ForEach-Object { Get-TweakState $script:Tweaks[$_] })
   }
   Apply = {
@@ -2297,7 +2332,7 @@ Add-Tweak @{
     Show-Step 5 11 'Network';                   Use-Tweak net_all
     Show-Step 6 11 'Power plan';                Use-Tweak power_plan
     Show-Step 7 11 'USB and device power';      Use-Tweak devpower
-    Show-Step 8 11 'Privacy';                   Use-Tweak privacy
+    Show-Step 8 11 'Privacy';                   Use-Tweak privacy; Use-Tweak modern_debloat
     Show-Step 9 11 'GPU';                       Use-Tweak gpu_auto
     Show-Step 10 11 'Boot timer';               Use-Tweak bcd_timer
     Show-Step 11 11 'Debloat';                  Use-Tweak debloat_extended; Use-Tweak debloat_onedrive
@@ -2317,7 +2352,7 @@ $script:Pages = [ordered]@{
   network  = @{ Title = 'Network'; Icon = 'wifi'; Sub = 'Lower latency: TCP settings, Nagle, adapter properties.'; Featured = 'net_all'
     Ids = @('net_all', 'net_global', 'net_interfaces', 'nic_tweaks', 'net_reset') }
   cleanup  = @{ Title = 'Debloat and Privacy'; Icon = 'trash'; Sub = 'Remove preinstalled apps and switch off telemetry.'; Featured = 'privacy'
-    Ids = @('privacy', 'debloat_curated', 'debloat_extended', 'debloat_onedrive') }
+    Ids = @('privacy', 'modern_debloat', 'debloat_curated', 'debloat_extended', 'debloat_onedrive') }
   gpu      = @{ Title = 'GPU'; Icon = 'monitor'; Sub = 'Driver-level tweaks for NVIDIA and AMD.'; Featured = 'gpu_auto'
     Ids = @('gpu_auto', 'nvidia_all', 'amd_all') }
   expert   = @{ Title = 'Expert Lab'; Icon = 'flask'; Sub = 'Powerful changes that trade safety or features for speed.'; Featured = ''
@@ -2328,10 +2363,10 @@ $script:Pages = [ordered]@{
 
 $script:Profiles = [ordered]@{
   safe = @{ Title = 'Safe'; Icon = 'shield'; Line = 'Low risk. Nothing that removes features or breaks apps.'
-    Ids = @('restore_point', 'reg_gaming', 'reg_input_ui', 'privacy', 'tasks_disable', 'net_global', 'power_plan')
+    Ids = @('restore_point', 'reg_gaming', 'reg_input_ui', 'privacy', 'modern_debloat', 'tasks_disable', 'net_global', 'power_plan')
     Tags = @('Gaming', 'Input', 'Privacy', 'Tasks', 'TCP', 'Power plan') }
   competitive = @{ Title = 'Competitive'; Icon = 'zap'; Line = 'Low latency for games. Leaves Update, printing, VPN and Store alone.'
-    Ids = @('restore_point', 'reg_all', 'net_all', 'power_plan', 'devpower', 'bcd_timer', 'privacy', 'tasks_disable', 'svc_basic')
+    Ids = @('restore_point', 'reg_all', 'net_all', 'power_plan', 'devpower', 'bcd_timer', 'privacy', 'modern_debloat', 'tasks_disable', 'svc_basic')
     Tags = @('Latency', 'Network', 'Power', 'USB', 'Boot timer', 'Basic services') }
   full = @{ Title = 'Full'; Icon = 'layers'; Line = 'Everything: advanced services, GPU tweaks and debloat.'
     Ids = @('apply_full')
@@ -2340,7 +2375,7 @@ $script:Profiles = [ordered]@{
 
 # the order tweaks run in when several are chosen together
 $script:Order = @('restore_point', 'reg_all', 'reg_system', 'reg_gaming', 'reg_input_ui', 'reg_priority', 'svc_basic', 'svc_standard', 'svc_advanced', 'svc_xbox',
-  'tasks_disable', 'net_all', 'net_global', 'net_interfaces', 'nic_tweaks', 'net_reset', 'power_plan', 'devpower', 'bcd_timer', 'privacy', 'debloat_curated',
+  'tasks_disable', 'net_all', 'net_global', 'net_interfaces', 'nic_tweaks', 'net_reset', 'power_plan', 'devpower', 'bcd_timer', 'privacy', 'modern_debloat', 'debloat_curated',
   'debloat_extended', 'debloat_onedrive', 'gpu_auto', 'nvidia_all', 'amd_all', 'ntfs_tweaks', 'memcomp_off', 'power_delete_others', 'mitigations_off',
   'defender_off', 'branding')
 
@@ -2533,7 +2568,7 @@ function Get-CatalogData {
     $tw += @{
       id = $t.Id; title = $t.Title; page = $t.Page; icon = $t.Icon; risk = $t.Risk; reboot = [bool]$t.Reboot; short = $t.Short
       does = @($t.Does); tags = @($t.Tags); note = $t.Note; vendor = $t.Vendor; covers = @($t.Covers); kind = $t.Kind; steps = $t.Steps
-      hasState = [bool]($t.Kind -eq 'tweak')
+      hasState = [bool]($t.Kind -eq 'tweak'); isNew = [bool]$t.New
     }
   }
   $pg = @()
@@ -3691,6 +3726,7 @@ svg { display: block; }
 .chip.r-security, .chip.r-danger { border-color: rgba(255, 107, 107, .5); background: rgba(255, 107, 107, .1); color: var(--text); } .chip.r-security .ic, .chip.r-danger .ic { color: var(--bad); }
 .chip.reboot .ic { color: var(--warn); }
 .tag { font-size: 11px; padding: 2px 8px; border-radius: 6px; background: rgba(255, 255, 255, .05); color: var(--text-2); }
+.new-badge { display: inline-block; vertical-align: middle; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 20px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--accent-ink); }
 .skel { position: relative; overflow: hidden; background: rgba(255, 255, 255, .05); border-radius: 20px; color: transparent; min-width: 64px; }
 .skel::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .12), transparent); animation: shimmer 1.4s infinite; }
 @keyframes shimmer { to { transform: translateX(100%); } }
@@ -4376,7 +4412,7 @@ function renderLatencyShell() {
 function twCard(t) {
   const miss = (t.vendor === 'nvidia' && !S.sys.hasNvidia) || (t.vendor === 'amd' && !S.sys.hasAmd);
   return '<article class="card lift tw' + (S.sel.has(t.id) ? ' sel' : '') + '" data-id="' + t.id + '" data-risk="' + t.risk + '" data-q="' + esc((t.title + ' ' + t.short + ' ' + (t.tags || []).join(' ')).toLowerCase()) + '">' +
-    '<div class="t-top"><div class="t-ico">' + ic(t.icon) + '</div><div class="t-name"><h4>' + esc(t.title) + '</h4></div><div class="chk">' + ic('check') + '</div></div>' +
+    '<div class="t-top"><div class="t-ico">' + ic(t.icon) + '</div><div class="t-name"><h4>' + esc(t.title) + (t.isNew ? ' <span class="new-badge">New</span>' : '') + '</h4></div><div class="chk">' + ic('check') + '</div></div>' +
     '<div class="t-short">' + esc(t.short) + '</div>' +
     '<div class="t-chips">' + riskChip(t.risk) + stateChip(t.id) + (t.reboot ? '<span class="chip reboot">' + ic('refresh') + 'Restart</span>' : '') + (miss ? '<span class="chip off">' + ic('skip') + 'Not detected</span>' : '') + '</div>' +
     '<div class="t-tags">' + (t.tags || []).slice(0, 5).map(x => '<span class="tag">' + esc(x) + '</span>').join('') + '</div>' +

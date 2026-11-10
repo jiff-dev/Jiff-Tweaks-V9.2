@@ -1,9 +1,13 @@
-# Jiff Tweaks V9.2
+# Jiff Tweaks
 
-Free Windows tweaks for gaming and low latency. **One PowerShell file. No installer, no separate app.**
+**v9.3** - free Windows tweaks for gaming and low latency. **One PowerShell file. No installer, no separate app.**
 Live dashboard, one-click profiles, a preview of the exact old and new value before you apply anything, and every change can be undone.
 
 Community: https://discord.gg/fuegoscrims
+
+### New in 9.3
+
+- **Windows 11 extras** tweak: Recall, Copilot, Widgets, Chat and Start menu recommendations off, in Safe and Competitive by default
 
 ## Run it
 
